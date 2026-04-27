@@ -1,0 +1,24 @@
+{
+  "pipeline_lock": {
+    "contract_version": "1.0",
+    "mode": "enforce",
+    "policy": {
+      "id": "scope-enforcement",
+      "description": "Rejects questions not related to Quantlix product and platform topics.",
+      "trigger": "input",
+      "rule": "Compute semantic similarity between the user question and canonical in-scope topics: deploy, policy, contract, budget, audit, integration, SDK, CLI, pricing. If score is below threshold, block and return an out_of_scope response template.",
+      "action": "block",
+      "severity": "high",
+      "example_violation": {
+        "input": "Can you debug my personal tax return?",
+        "decision": "blocked_out_of_scope",
+        "output": {
+          "answer": "I can only answer questions about Quantlix product and deployment topics.",
+          "citations": [],
+          "confidence": 1.0,
+          "out_of_scope": true
+        }
+      }
+    }
+  }
+}

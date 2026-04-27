@@ -1,0 +1,27 @@
+{
+  "pipeline_lock": {
+    "contract_version": "1.0",
+    "mode": "enforce",
+    "policy": {
+      "id": "rate-limit-per-ip",
+      "description": "Applies gateway-level request limits by client IP.",
+      "trigger": "input",
+      "rule": "Allow up to 30 messages per IP per hour and 200 messages per IP per day. Exceeding either threshold returns HTTP 429 with Retry-After.",
+      "action": "block",
+      "severity": "medium",
+      "example_violation": {
+        "input": "Repeated automated requests from one source IP.",
+        "decision": "blocked_rate_limit",
+        "output": {
+          "http_status": 429,
+          "headers": {
+            "Retry-After": "3600"
+          },
+          "body": {
+            "error": "rate_limit_exceeded"
+          }
+        }
+      }
+    }
+  }
+}

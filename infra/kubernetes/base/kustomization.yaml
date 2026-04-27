@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: quantlix
+
+resources:
+  - postgres/configmap-init.yaml
+  - postgres/service.yaml
+  - postgres/statefulset.yaml
+  - assistant/deployment.yaml
+  - assistant/service.yaml
+  - assistant/ingress.yaml
+  - assistant/hpa.yaml
+  - assistant/docs-pvc.yaml
+  - assistant/indexer-cronjob.yaml

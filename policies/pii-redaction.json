@@ -1,0 +1,24 @@
+{
+  "pipeline_lock": {
+    "contract_version": "1.0",
+    "mode": "enforce",
+    "policy": {
+      "id": "pii-redaction",
+      "description": "Redacts sensitive identifiers in both user input and model output.",
+      "trigger": "input_and_output",
+      "rule": "Detect and redact email addresses, phone numbers, payment card numbers (regex + Luhn), and API key prefixes (sk_, qxl_, sk-ant-). Input is redacted in-place. Output uses strict replacement: if sensitive pattern is detected, replace response with safe alternative.",
+      "action": "redact",
+      "severity": "high",
+      "example_violation": {
+        "input": "My key is qxl_live_123 and my card is 4242 4242 4242 4242",
+        "decision": "redacted",
+        "output": {
+          "answer": "Sensitive identifiers were removed. Please rotate exposed secrets before continuing.",
+          "citations": [],
+          "confidence": 1.0,
+          "out_of_scope": false
+        }
+      }
+    }
+  }
+}

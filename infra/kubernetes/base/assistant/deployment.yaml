@@ -1,0 +1,92 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: quantlix-assistant
+  namespace: quantlix
+  labels:
+    app: quantlix-assistant
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: quantlix-assistant
+  template:
+    metadata:
+      labels:
+        app: quantlix-assistant
+    spec:
+      containers:
+        - name: assistant
+          image: quantlix-assistant:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8000
+          env:
+            - name: PORT
+              value: "8000"
+            - name: QUANTLIX_API_BASE
+              value: https://api.quantlix.ai
+            - name: QUANTLIX_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: quantlix-assistant
+                  key: quantlix-api-key
+            - name: QUANTLIX_DEPLOYMENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: quantlix-assistant
+                  key: quantlix-deployment-id
+            - name: QUANTLIX_CONTRACT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: quantlix-assistant
+                  key: quantlix-contract-id
+                  optional: true
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: quantlix-assistant
+                  key: database-url
+            - name: VOYAGE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: quantlix-assistant
+                  key: voyage-api-key
+            - name: WIDGET_PUBLIC_ORIGIN
+              valueFrom:
+                configMapKeyRef:
+                  name: quantlix-assistant-config
+                  key: widget-public-origin
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: quantlix-assistant
+                  key: redis-url
+                  optional: true
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "1000m"
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            failureThreshold: 30
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10

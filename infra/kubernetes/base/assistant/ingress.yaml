@@ -1,0 +1,26 @@
+# Align ingressClassName + cert-manager issuer with your cluster (same pattern as cloud base/ingress.yaml).
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: quantlix-assistant
+  namespace: quantlix
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
+    cert-manager.io/cluster-issuer: letsencrypt
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - assistant.quantlix.local
+      secretName: assistant-quantlix-tls
+  rules:
+    - host: assistant.quantlix.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: quantlix-assistant
+                port:
+                  number: 8000

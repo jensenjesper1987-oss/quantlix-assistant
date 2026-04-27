@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: quantlix-assistant
+  namespace: quantlix
+  labels:
+    app: quantlix-assistant
+spec:
+  selector:
+    app: quantlix-assistant
+  ports:
+    - name: http
+      port: 8000
+      targetPort: http

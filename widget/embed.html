@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quantlix Assistant Widget Demo</title>
+  </head>
+  <body style="background:#08111F;color:#F3F7FF;font-family:Inter,system-ui,sans-serif;">
+    <main style="max-width:900px;margin:24px auto;">
+      <h1>Quantlix Assistant Widget</h1>
+      <p>
+        Production embed example. The browser points at your assistant backend,
+        and that backend calls your Quantlix deployment with server-side secrets.
+      </p>
+      <pre style="color:#5FD6FF;white-space:pre-wrap;">&lt;script
+  src="https://cdn.example.com/quantlix-assistant-widget.js"
+  data-quantlix-assistant
+  data-backend-url="https://assistant.example.com/chat"
+  data-title="Quantlix Assistant"
+  data-show-enforcement="true"&gt;&lt;/script&gt;</pre>
+    </main>
+
+    <script
+      type="module"
+      src="./src/ChatWidget.tsx"
+      data-quantlix-assistant
+      data-backend-url="http://localhost:8001/chat"
+      data-title="Quantlix Assistant"
+      data-show-enforcement="true"
+    ></script>
+  </body>
+</html>

@@ -1,0 +1,58 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: quantlix-assistant-indexer
+  namespace: quantlix
+  labels:
+    app: quantlix-assistant-indexer
+spec:
+  # Suspended by default: run manually after docs updates/deploys.
+  suspend: true
+  schedule: "0 3 * * *"
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      ttlSecondsAfterFinished: 86400
+      template:
+        metadata:
+          labels:
+            app: quantlix-assistant-indexer
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: indexer
+              image: quantlix-assistant:latest
+              imagePullPolicy: IfNotPresent
+              env:
+                - name: DOCS_PATH
+                  value: /docs
+                - name: DATABASE_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: quantlix-assistant
+                      key: database-url
+                - name: VOYAGE_API_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: quantlix-assistant
+                      key: voyage-api-key
+              command:
+                - python
+                - -c
+                - |
+                  import os
+                  from app.rag import index_markdown_dir
+                  docs_path = os.environ.get("DOCS_PATH", "/docs")
+                  indexed = index_markdown_dir(docs_path)
+                  print(f"Indexed {indexed} chunks from {docs_path}")
+              volumeMounts:
+                - name: docs
+                  mountPath: /docs
+                  readOnly: true
+          volumes:
+            - name: docs
+              persistentVolumeClaim:
+                # Replace with the PVC that contains markdown docs to ingest.
+                claimName: quantlix-assistant-docs

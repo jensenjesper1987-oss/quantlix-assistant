@@ -1,0 +1,7 @@
+.git
+.github
+widget/node_modules
+widget/dist
+**/__pycache__
+**/*.pyc
+.env

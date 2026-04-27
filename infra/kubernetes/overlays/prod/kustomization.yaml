@@ -1,0 +1,40 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: quantlix
+
+resources:
+  - ../../base
+
+# Non-secret widget CORS allowlist (comma-separated origins).
+configMapGenerator:
+  - name: quantlix-assistant-config
+    options:
+      disableNameSuffixHash: true
+    literals:
+      - widget-public-origin=https://www.quantlix.ai,https://quantlix.ai
+
+# Override with your registry path (same flow as cloud overlays/prod).
+images:
+  - name: quantlix-assistant:latest
+    newName: docker.io/quantlix/quantlix-assistant
+    newTag: latest
+
+patches:
+  - target:
+      kind: Ingress
+      name: quantlix-assistant
+    patch: |-
+      - op: replace
+        path: /spec/tls/0/hosts/0
+        value: assistant.quantlix.ai
+      - op: replace
+        path: /spec/rules/0/host
+        value: assistant.quantlix.ai
+  - target:
+      kind: Deployment
+      name: quantlix-assistant
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/imagePullPolicy
+        value: Always

@@ -1,0 +1,6 @@
+fastapi
+httpx
+pgvector
+voyageai
+uvicorn
+psycopg[binary]

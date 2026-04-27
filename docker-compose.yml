@@ -1,0 +1,73 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: quantlix-assistant-postgres
+    environment:
+      POSTGRES_DB: quantlix_assistant
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d quantlix_assistant"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    container_name: quantlix-assistant-redis
+    ports:
+      - "6380:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: quantlix-assistant-backend
+    working_dir: /app
+    env_file:
+      - .env
+    environment:
+      PORT: "8001"
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/quantlix_assistant
+      REDIS_URL: redis://redis:6379/0
+    volumes:
+      - ./backend:/app
+      - /Users/jesperjensen/cloud:/docs/quantlix-cloud:ro
+    command: sh -c 'exec uvicorn app.main:app --host 0.0.0.0 --port "${PORT}" --reload'
+    ports:
+      - "8001:8001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  widget:
+    build:
+      context: ./widget
+      dockerfile: Dockerfile
+    container_name: quantlix-assistant-widget
+    working_dir: /app
+    volumes:
+      - ./widget:/app
+    command: npm run dev -- --host 0.0.0.0 --port 3030
+    ports:
+      - "3030:3030"
+    depends_on:
+      - backend
+
+volumes:
+  pg_data:
+  redis_data:

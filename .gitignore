@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.mypy_cache/
+.ruff_cache/
+.venv/
+
+# Node
+node_modules/
+dist/
+
+# Env
+.env
+.en
+
+# OS
+.DS_Store
+
+# Runtime
+*.log
+
+# Local kubeconfig helper (see scripts/env-kubeconfig.example.sh)
+scripts/env-kubeconfig.local.sh

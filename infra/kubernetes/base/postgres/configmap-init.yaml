@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: quantlix-assistant-postgres-init
+  namespace: quantlix
+  labels:
+    app: quantlix-assistant-postgres
+data:
+  01-init.sql: |
+    CREATE EXTENSION IF NOT EXISTS vector;
