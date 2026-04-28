@@ -130,6 +130,22 @@ def _retrieval_query(request: ChatRequest) -> str:
     return "\n".join(parts)[:2000]
 
 
+def _policy_scoped_question(question: str) -> str:
+    """
+    Keep UX natural while making policy scope checks deterministic.
+
+    The scope policy evaluates payload.question. Prefix ambiguous short prompts
+    with explicit Quantlix context so "Show me a RAG setup" is interpreted as
+    a Quantlix support request instead of generic ML advice.
+    """
+    normalized = question.strip()
+    if not normalized:
+        return question
+    if "quantlix" in normalized.casefold():
+        return normalized
+    return f"In Quantlix platform context: {normalized}"
+
+
 def assert_no_jailbreak(request: ChatRequest) -> None:
     """Fail closed for direct backend callers that bypass the widget."""
     inputs = [request.question]
@@ -218,13 +234,14 @@ async def chat(request: ChatRequest) -> ChatResponse:
     context = await retrieve(_retrieval_query(request), k=5)
     history_pairs = [(turn.role, turn.content) for turn in request.history]
     user_prompt = build_prompt(request.question, context, history=history_pairs)
+    scoped_question = _policy_scoped_question(request.question)
     messages = [
         GatewayMessage(role="system", content=SYSTEM_PROMPT),
         GatewayMessage(role="user", content=user_prompt),
     ]
 
     payload = {
-        "question": request.question,
+        "question": scoped_question,
         "session_id": str(request.session_id),
         "history": [turn.model_dump() for turn in request.history],
         "messages": [message.model_dump() for message in messages],
