@@ -1,10 +1,10 @@
 import React from "react";
 
 const DEFAULT_SUGGESTIONS: readonly string[] = [
-  "How do I deploy a model?",
-  "Explain enforcement packs",
-  "Show me a RAG setup",
-  "Help me troubleshoot a workflow",
+  "How do I deploy a model on Quantlix?",
+  "Explain Quantlix enforcement packs",
+  "Show me a RAG setup on Quantlix",
+  "Help me troubleshoot a Quantlix workflow",
 ];
 
 type SuggestionChipsProps = {
