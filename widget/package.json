@@ -5,8 +5,20 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "dev:chat": "vite --open /chat.html",
+    "dev:react": "vite --open /react-demo.html",
+    "dev:assistant": "vite --open /index.html",
+    "build": "vite build && vite build --config vite.lib.config.ts",
+    "build:lib": "vite build --config vite.lib.config.ts",
     "preview": "vite preview"
+  },
+  "exports": {
+    "./chat": {
+      "types": "./src/chat/index.ts",
+      "import": "./dist/lib/quantlix-chat.js"
+    },
+    "./chat.css": "./src/chat/chat.css",
+    "./chat/style.css": "./dist/lib/style.css"
   },
   "dependencies": {
     "react": "^18.3.1",

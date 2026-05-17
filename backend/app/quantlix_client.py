@@ -68,18 +68,54 @@ class QuantlixClient:
             ) from exc
 
         if 400 <= response.status_code < 500:
-            data = response.json()
-            detail = data.get("detail", {})
-            violations = []
-            if isinstance(detail, dict):
-                violations = detail.get("violations", [])
-            elif isinstance(data.get("violations"), list):
-                violations = data["violations"]
-            elif detail:
+            violations: list[dict[str, Any]] = []
+            body_text = response.text.strip()
+            data: dict[str, Any] | None = None
+            try:
+                parsed = response.json()
+                if isinstance(parsed, dict):
+                    data = parsed
+            except ValueError:
+                data = None
+
+            # Quantlix/runtime responses may place violations under different keys.
+            candidates: list[Any] = []
+            if data is not None:
+                candidates.extend(
+                    [
+                        data.get("violations"),
+                        data.get("detail"),
+                        data.get("error"),
+                        data.get("result"),
+                    ]
+                )
+                detail = data.get("detail")
+                if isinstance(detail, dict):
+                    candidates.extend([detail.get("violations"), detail.get("error")])
+                error = data.get("error")
+                if isinstance(error, dict):
+                    candidates.extend([error.get("violations"), error.get("detail")])
+
+            for candidate in candidates:
+                if isinstance(candidate, list):
+                    # Keep only object-like entries.
+                    violations = [item for item in candidate if isinstance(item, dict)]
+                    if violations:
+                        break
+                elif isinstance(candidate, dict):
+                    nested = candidate.get("violations")
+                    if isinstance(nested, list):
+                        violations = [item for item in nested if isinstance(item, dict)]
+                        if violations:
+                            break
+
+            if not violations:
+                fallback_message = body_text[:500] if body_text else "No response body"
                 violations = [
                     {
                         "code": "QUANTLIX_REQUEST_REJECTED",
-                        "message": str(detail),
+                        "message": fallback_message,
+                        "status_code": response.status_code,
                     }
                 ]
             raise EnforcementBlocked("Request blocked by Quantlix", violations)

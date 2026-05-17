@@ -228,6 +228,33 @@ def _citations_from_contract(obj: dict) -> list[Citation]:
     return out
 
 
+def _quantlix_monthly_quota_exceeded(violations: list[dict]) -> bool:
+    """Detect Quantlix plan token-cap rejections and surface a user-friendly message."""
+    for violation in violations:
+        if not isinstance(violation, dict):
+            continue
+        status_code = violation.get("status_code")
+        raw_message = violation.get("message")
+        if status_code != 429 or not isinstance(raw_message, str):
+            continue
+        if "max_tokens_per_month" in raw_message and "upgrade_required" in raw_message:
+            return True
+        try:
+            parsed = json.loads(raw_message)
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(parsed, dict):
+            continue
+        detail = parsed.get("detail")
+        if (
+            isinstance(detail, dict)
+            and detail.get("error") == "upgrade_required"
+            and detail.get("limit") == "max_tokens_per_month"
+        ):
+            return True
+    return False
+
+
 @app.post("/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest) -> ChatResponse:
     assert_no_jailbreak(request)
@@ -270,6 +297,17 @@ async def chat(request: ChatRequest) -> ChatResponse:
         ) from exc
     except EnforcementBlocked as exc:
         logger.warning("Request blocked by Quantlix policies: %s", exc.violations)
+        if _quantlix_monthly_quota_exceeded(exc.violations):
+            raise HTTPException(
+                status_code=429,
+                detail={
+                    "answer": (
+                        "This assistant has reached its monthly Quantlix token quota. "
+                        "Please upgrade the plan (or wait for the monthly reset) to continue."
+                    ),
+                    "violations": exc.violations,
+                },
+            ) from exc
         raise HTTPException(
             status_code=400,
             detail={

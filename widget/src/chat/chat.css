@@ -1,0 +1,443 @@
+/* Protected chat widget (Go Live / embed) */
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+:root {
+  --ql-void: #050a12;
+  --ql-surface-0: #0a1424;
+  --ql-surface-1: #0f1c2e;
+  --ql-surface-2: #152238;
+  --ql-surface-3: #1a2a42;
+  --ql-border: rgba(94, 152, 220, 0.18);
+  --ql-border-strong: rgba(95, 214, 255, 0.28);
+  --ql-cyan: #5fd6ff;
+  --ql-blue: #4da3ff;
+  --ql-indigo: #6b8cff;
+  --ql-text: #eef3fb;
+  --ql-text-muted: #9eb0c9;
+  --ql-text-dim: #6b7f9a;
+  --ql-success: #3dd98c;
+  --ql-danger: #ff6b7a;
+  --ql-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+  --ql-shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.45);
+  --ql-radius-sm: 8px;
+  --ql-radius-md: 12px;
+  --ql-radius-lg: 16px;
+  --ql-font: "Inter", system-ui, -apple-system, sans-serif;
+}
+
+.ql-chat-react-host {
+  width: 100%;
+}
+
+.ql-chat-shell--floating {
+  position: fixed;
+  z-index: 9999;
+  font-family: var(--ql-font);
+  color: var(--ql-text);
+}
+
+.ql-chat-shell--bottom-right {
+  right: 24px;
+  bottom: 24px;
+}
+
+.ql-chat-shell--bottom-left {
+  left: 24px;
+  bottom: 24px;
+}
+
+.ql-chat-shell--inline {
+  position: relative;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  font-family: var(--ql-font);
+  color: var(--ql-text);
+}
+
+.ql-chat-shell--theme-light {
+  --ql-void: #f4f7fc;
+  --ql-surface-0: #ffffff;
+  --ql-surface-1: #f8fafd;
+  --ql-surface-2: #eef3fb;
+  --ql-surface-3: #e3ebf6;
+  --ql-border: rgba(30, 58, 95, 0.12);
+  --ql-border-strong: rgba(45, 107, 253, 0.25);
+  --ql-text: #0f1c2e;
+  --ql-text-muted: #4a5f7a;
+  --ql-text-dim: #6b7f9a;
+}
+
+.ql-chat-launcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px 12px 14px;
+  border: 1px solid var(--ql-border-strong);
+  border-radius: 999px;
+  background: linear-gradient(145deg, var(--ql-surface-2), var(--ql-surface-0));
+  color: var(--ql-text);
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: var(--ql-shadow-lg);
+}
+
+.ql-chat-panel {
+  width: min(100%, 420px);
+  max-height: min(560px, calc(100vh - 48px));
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--ql-radius-lg);
+  border: 1px solid var(--ql-border);
+  background: linear-gradient(180deg, var(--ql-surface-1) 0%, var(--ql-surface-0) 100%);
+  box-shadow: var(--ql-shadow-lg);
+  overflow: hidden;
+}
+
+.ql-chat-shell--inline .ql-chat-panel {
+  width: 100%;
+  max-width: none;
+  max-height: min(520px, 70vh);
+}
+
+.ql-chat-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--ql-border);
+  background: rgba(15, 28, 46, 0.85);
+}
+
+.ql-chat-shell--theme-light .ql-chat-header {
+  background: rgba(248, 250, 253, 0.95);
+}
+
+.ql-chat-header-main {
+  display: flex;
+  gap: 12px;
+  min-width: 0;
+}
+
+.ql-chat-header-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--ql-radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--ql-border);
+  background: linear-gradient(135deg, rgba(95, 214, 255, 0.12), rgba(77, 163, 255, 0.08));
+  flex-shrink: 0;
+}
+
+.ql-chat-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ql-chat-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.ql-chat-protected-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(61, 217, 140, 0.12);
+  color: var(--ql-success);
+  border: 1px solid rgba(61, 217, 140, 0.28);
+}
+
+.ql-chat-demo-badge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(255, 193, 94, 0.14);
+  color: #ffc15e;
+  border: 1px solid rgba(255, 193, 94, 0.35);
+}
+
+.ql-chat-subtitle {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--ql-text-muted);
+}
+
+.ql-chat-close {
+  width: 32px;
+  height: 32px;
+  border: 1px solid transparent;
+  border-radius: var(--ql-radius-sm);
+  background: transparent;
+  color: var(--ql-text-muted);
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.ql-chat-body {
+  flex: 1;
+  min-height: 220px;
+  overflow-y: auto;
+  padding: 14px;
+  background: rgba(5, 10, 18, 0.35);
+}
+
+.ql-chat-shell--theme-light .ql-chat-body {
+  background: rgba(244, 247, 252, 0.8);
+}
+
+.ql-chat-empty-text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--ql-text-muted);
+}
+
+.ql-chat-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ql-chat-user-row {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.ql-chat-user-bubble {
+  max-width: 92%;
+  padding: 10px 12px;
+  border-radius: 14px 14px 4px 14px;
+  font-size: 13px;
+  line-height: 1.5;
+  background: linear-gradient(135deg, rgba(77, 163, 255, 0.22), rgba(95, 214, 255, 0.12));
+  border: 1px solid rgba(77, 163, 255, 0.28);
+}
+
+.ql-chat-user-icon {
+  margin-right: 6px;
+}
+
+.ql-gov-reply {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: var(--ql-radius-md);
+  border: 1px solid var(--ql-border);
+  background: var(--ql-surface-2);
+}
+
+.ql-gov-reply--allowed {
+  border-color: rgba(61, 217, 140, 0.35);
+  background: rgba(61, 217, 140, 0.08);
+}
+
+.ql-gov-reply--blocked {
+  border-color: rgba(255, 107, 122, 0.35);
+  background: rgba(255, 107, 122, 0.1);
+}
+
+.ql-gov-reply--budget_capped {
+  border-color: rgba(255, 193, 94, 0.35);
+  background: rgba(255, 193, 94, 0.1);
+}
+
+.ql-gov-reply--flagged {
+  border-color: rgba(107, 140, 255, 0.35);
+  background: rgba(107, 140, 255, 0.1);
+}
+
+.ql-gov-reply-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.ql-gov-reply-status {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ql-gov-reply--blocked .ql-gov-reply-status {
+  color: var(--ql-danger);
+}
+
+.ql-gov-reply--allowed .ql-gov-reply-status {
+  color: var(--ql-success);
+}
+
+.ql-gov-reply--budget_capped .ql-gov-reply-status {
+  color: #ffc15e;
+}
+
+.ql-gov-reply--flagged .ql-gov-reply-status {
+  color: var(--ql-indigo);
+}
+
+.ql-gov-reply-headline {
+  margin: 0 0 4px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.ql-gov-reply-text,
+.ql-gov-reply-note,
+.ql-gov-reply-caught {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ql-text-muted);
+}
+
+.ql-gov-reply-caught {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--ql-text-dim);
+}
+
+.ql-chat-loading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: var(--ql-radius-md);
+  border: 1px dashed var(--ql-border);
+}
+
+.ql-chat-loading-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ql-cyan);
+  animation: ql-chat-pulse 1s ease-in-out infinite;
+}
+
+.ql-chat-loading-dot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.ql-chat-loading-dot:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes ql-chat-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+}
+
+.ql-chat-loading-label {
+  margin-left: 4px;
+  font-size: 12px;
+  color: var(--ql-text-muted);
+}
+
+.ql-chat-footer {
+  padding: 10px 12px 12px;
+  border-top: 1px solid var(--ql-border);
+  background: var(--ql-surface-1);
+}
+
+.ql-chat-demo {
+  margin-bottom: 10px;
+}
+
+.ql-chat-demo-label {
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ql-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.ql-chat-demo-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ql-chat-demo-chip {
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--ql-border);
+  background: var(--ql-surface-2);
+  color: var(--ql-text);
+  font-size: 11px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.ql-chat-demo-chip:hover:not(:disabled) {
+  border-color: var(--ql-border-strong);
+}
+
+.ql-chat-demo-chip:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ql-chat-composer {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.ql-chat-composer-input {
+  flex: 1;
+  resize: none;
+  min-height: 44px;
+  padding: 10px 12px;
+  border-radius: var(--ql-radius-md);
+  border: 1px solid var(--ql-border);
+  background: var(--ql-surface-0);
+  color: var(--ql-text);
+  font-family: inherit;
+  font-size: 13px;
+}
+
+.ql-chat-composer-send {
+  padding: 10px 14px;
+  border-radius: var(--ql-radius-md);
+  border: 1px solid rgba(95, 214, 255, 0.35);
+  background: linear-gradient(135deg, rgba(95, 214, 255, 0.2), rgba(77, 163, 255, 0.15));
+  color: var(--ql-text);
+  font-weight: 600;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.ql-chat-composer-send:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ql-chat-branding {
+  margin: 8px 0 0;
+  text-align: center;
+  font-size: 11px;
+  color: var(--ql-text-dim);
+}

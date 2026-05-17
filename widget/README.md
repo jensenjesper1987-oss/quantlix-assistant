@@ -1,50 +1,104 @@
 # Widget
 
-The widget is an embeddable React chat surface for Quantlix Assistant, including
-an Enforcement Drawer that makes policy outcomes visible to end users.
+Two embeddable bundles ship from this package:
 
-## Runtime configuration
+| Bundle | Output | Use case |
+|--------|--------|----------|
+| **Protected Chat** | `dist/chat/v1.js` | Go Live “Try it live”, 1-line embed on any site |
+| **Quantlix Assistant** | `dist/quantlix-assistant.js` | Governed support bot (RAG + docs) |
 
-The widget is safe to use on customer websites because it calls a public
-assistant backend, not Quantlix directly. Keep `QUANTLIX_API_KEY`,
-`QUANTLIX_DEPLOYMENT_ID`, and provider keys on the backend.
+## Protected Chat (Go Live / embed)
 
-Embed a built widget bundle with script attributes:
+Browser calls your Quantlix deployment `POST /run` with a **publishable** key (`pk_…`) scoped to that deployment. For stricter setups, point `data-proxy-url` at your backend instead.
+
+### Inline (Go Live page)
+
+```html
+<div id="quantlix-chat-root"></div>
+<script
+  src="https://cdn.quantlix.ai/chat/v1.js"
+  data-deployment="YOUR_DEPLOYMENT_ID"
+  data-api-key="pk_YOUR_PUBLISHABLE_KEY"
+  data-mode="inline"
+  data-lazy="false"
+  async></script>
+```
+
+### 1-line floating embed
 
 ```html
 <script
-  src="https://cdn.example.com/quantlix-assistant-widget.js"
-  data-quantlix-assistant
-  data-backend-url="https://assistant.example.com/chat"
-  data-title="Quantlix Assistant"
-  data-show-enforcement="true">
-</script>
+  src="https://cdn.quantlix.ai/chat/v1.js"
+  data-deployment="YOUR_DEPLOYMENT_ID"
+  data-api-key="pk_YOUR_PUBLISHABLE_KEY"
+  async></script>
 ```
 
-Or configure it before loading the script:
+Defaults: floating launcher, bottom-right, lazy-load until click, “Powered by Quantlix” branding.
 
-```html
-<script>
-  window.QuantlixAssistantConfig = {
-    backendUrl: "https://assistant.example.com/chat",
-    title: "Acme Assistant",
-    showEnforcement: true
-  };
-</script>
+### Options
+
+| Attribute | Description |
+|-----------|-------------|
+| `data-deployment` | Required deployment id |
+| `data-api-key` | Publishable key (`pk_…`) for direct `/run` |
+| `data-proxy-url` | Optional HTTPS proxy instead of direct `/run` |
+| `data-api-base` | Quantlix API origin (default `https://api.quantlix.ai`) |
+| `data-mode` | `inline` or `floating` |
+| `data-theme` | `dark` or `light` |
+| `data-position` | `bottom-right` or `bottom-left` (floating) |
+| `data-greeting` | Empty-state copy |
+| `data-title` | Header title |
+| `data-lazy` | `true` — show launcher first (floating) |
+| `data-show-branding` | `true` — “Powered by Quantlix” |
+| `data-mount` | CSS selector for inline mount |
+
+Or set `window.QuantlixChatConfig` before the script.
+
+### Demo mode (no API keys)
+
+If `deploymentId` / `apiKey` are missing or still placeholders (`YOUR_…`, `pk_...`), the widget
+automatically runs in **demo mode** with simulated Blocked / Budget capped / Flagged / Allowed
+outcomes. Force with `demo={true}` or `data-demo="true"`.
+
+### React component (portal / Go Live page)
+
+```tsx
+import { ProtectedChat, buildEmbedSnippet } from "quantlix-assistant-widget/chat";
+import "quantlix-assistant-widget/chat.css";
+
+export function GoLiveTryIt({ deploymentId, publishableKey }: Props) {
+  return (
+    <ProtectedChat
+      deploymentId={deploymentId}
+      apiKey={publishableKey}
+      mode="inline"
+      showBranding
+    />
+  );
+}
+
+// Preview before keys exist:
+<ProtectedChat demo mode="inline" />
 ```
 
-The browser-to-backend request stays stable: `{ question, session_id, history }`.
-The backend is responsible for calling Quantlix production.
+Build the library bundle: `npm run build:lib` → `dist/lib/quantlix-chat.js`.
 
-## Jailbreak and security model
+### Local dev
 
-The widget includes a lightweight client-side precheck for obvious prompt
-injection strings, and it renders model output as React text rather than raw
-HTML. This prevents the widget from becoming an XSS or prompt-injection
-amplifier.
+```bash
+npm run dev:chat      # inline embed demo → chat.html (demo mode by default)
+npm run dev:assistant # assistant widget → index.html
+```
 
-Do not treat browser code as the security boundary. Attackers can bypass the
-widget and call the backend directly, so jailbreak prevention must also be
-enforced in Quantlix through `policies/jailbreak-prevention.json` and the
-`contracts/support-bot.json` pipeline lock.
+## Quantlix Assistant
 
+The assistant widget calls **your** backend (`POST /chat`), not Quantlix directly. See existing embed attributes (`data-quantlix-assistant`, `data-backend-url`, …) in `embed.html` and `docs/CUSTOMIZE.md`.
+
+## Build
+
+```bash
+npm ci && npm run build
+```
+
+Upload `dist/chat/v1.js` (+ hashed CSS under `dist/chat/`) and `dist/quantlix-assistant.js` to your CDN.

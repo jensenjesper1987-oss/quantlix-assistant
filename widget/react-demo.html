@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ProtectedChat React component — demo</title>
+  </head>
+  <body style="background:#08111F;color:#F3F7FF;font-family:Inter,system-ui,sans-serif;">
+    <main style="max-width:760px;margin:32px auto;padding:0 16px;">
+      <h1 style="font-size:22px;">&lt;ProtectedChat /&gt; (demo mode)</h1>
+      <p style="color:#9eb0c9;font-size:14px;">
+        Same component the portal can import — no API keys required.
+      </p>
+      <div id="react-root"></div>
+    </main>
+    <script type="module">
+      import React from "react";
+      import { createRoot } from "react-dom/client";
+      import { ProtectedChat } from "/src/chat/index.ts";
+
+      createRoot(document.getElementById("react-root")).render(
+        React.createElement(ProtectedChat, { demo: true, mode: "inline" }),
+      );
+    </script>
+  </body>
+</html>

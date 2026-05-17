@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quantlix Protected Chat — 1-line embed demo</title>
+  </head>
+  <body style="background:#08111F;color:#F3F7FF;font-family:Inter,system-ui,sans-serif;">
+    <main style="max-width:900px;margin:24px auto;padding:0 16px;">
+      <h1>1-line embed</h1>
+      <p style="color:#9eb0c9;">
+        Drop this on any page for a Quantlix-protected floating chat (lazy-loaded launcher).
+      </p>
+      <pre style="color:#5FD6FF;white-space:pre-wrap;font-size:13px;">&lt;script
+  src="https://cdn.quantlix.ai/chat/v1.js"
+  data-deployment="YOUR_DEPLOYMENT_ID"
+  data-api-key="pk_YOUR_PUBLISHABLE_KEY"
+  async&gt;&lt;/script&gt;</pre>
+    </main>
+
+    <script
+      type="module"
+      src="/src/chat/main.tsx"
+      data-deployment="YOUR_DEPLOYMENT_ID"
+      data-api-key="pk_YOUR_PUBLISHABLE_KEY"
+      data-api-base="http://localhost:8000"
+      data-mode="floating"
+      data-lazy="true"
+      data-show-branding="true"
+    ></script>
+  </body>
+</html>
