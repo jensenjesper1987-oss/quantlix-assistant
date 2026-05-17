@@ -1,9 +1,9 @@
 import type { ProtectedChatConfig } from "./config";
 import { runDemoChat } from "./demoRun";
+import { toChatTurnResult, type ChatTurnResult } from "./chatTurnResult";
 import {
   outcomeFromGenerated,
   outcomeFromHttpError,
-  type GovernanceOutcome,
   type HistoryTurn,
 } from "./governanceOutcome";
 
@@ -16,7 +16,8 @@ export type ChatRunRequest = {
 async function runViaProxy(
   config: ProtectedChatConfig,
   request: ChatRunRequest,
-): Promise<GovernanceOutcome> {
+  started: number,
+): Promise<ChatTurnResult> {
   const response = await fetch(config.proxyUrl!, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -34,28 +35,34 @@ async function runViaProxy(
     body = null;
   }
 
+  const latencyMs = Math.round(performance.now() - started);
+
   if (!response.ok) {
-    return outcomeFromHttpError(response.status, body);
+    return toChatTurnResult(outcomeFromHttpError(response.status, body), latencyMs);
   }
 
   if (body && typeof body === "object") {
     const data = body as Record<string, unknown>;
     if (typeof data.answer === "string" && data.answer.trim()) {
-      return outcomeFromGenerated(data.answer);
+      return toChatTurnResult(outcomeFromGenerated(data.answer), latencyMs);
     }
   }
 
-  return {
-    status: "blocked",
-    headline: "Unexpected proxy response",
-    detail: "The proxy did not return an answer field.",
-  };
+  return toChatTurnResult(
+    {
+      status: "blocked",
+      headline: "Unexpected proxy response",
+      detail: "The proxy did not return an answer field.",
+    },
+    latencyMs,
+  );
 }
 
 async function runViaQuantlix(
   config: ProtectedChatConfig,
   request: ChatRunRequest,
-): Promise<GovernanceOutcome> {
+  started: number,
+): Promise<ChatTurnResult> {
   const response = await fetch(`${config.apiBase}/run`, {
     method: "POST",
     headers: {
@@ -80,8 +87,10 @@ async function runViaQuantlix(
     body = null;
   }
 
+  const latencyMs = Math.round(performance.now() - started);
+
   if (!response.ok) {
-    return outcomeFromHttpError(response.status, body);
+    return toChatTurnResult(outcomeFromHttpError(response.status, body), latencyMs);
   }
 
   if (body && typeof body === "object") {
@@ -90,28 +99,34 @@ async function runViaQuantlix(
     if (output && typeof output === "object") {
       const generated = (output as Record<string, unknown>).generated;
       if (typeof generated === "string" && generated.trim()) {
-        return outcomeFromGenerated(generated);
+        return toChatTurnResult(outcomeFromGenerated(generated), latencyMs);
       }
     }
   }
 
-  return {
-    status: "blocked",
-    headline: "No model output",
-    detail:
-      "Quantlix accepted the request but did not return inline output. Bind provider-backed inference on this deployment.",
-  };
+  return toChatTurnResult(
+    {
+      status: "blocked",
+      headline: "No model output",
+      detail:
+        "Quantlix accepted the request but did not return inline output. Bind provider-backed inference on this deployment.",
+    },
+    latencyMs,
+  );
 }
 
 export async function runProtectedChat(
   config: ProtectedChatConfig,
   request: ChatRunRequest,
-): Promise<GovernanceOutcome> {
+): Promise<ChatTurnResult> {
   if (config.demo) {
     return runDemoChat(request);
   }
+
+  const started = performance.now();
+
   if (config.proxyUrl) {
-    return runViaProxy(config, request);
+    return runViaProxy(config, request, started);
   }
-  return runViaQuantlix(config, request);
+  return runViaQuantlix(config, request, started);
 }

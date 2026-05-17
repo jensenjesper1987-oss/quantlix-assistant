@@ -1,17 +1,17 @@
-import type { GovernanceOutcome } from "./governanceOutcome";
+import type { ChatTurnResult } from "./chatTurnResult";
 import type { ChatRunRequest } from "./quantlixRun";
 
-const DEMO_LATENCY_MS = { min: 350, max: 750 };
+const DEMO_LATENCY_MS = { min: 8, max: 42 };
 
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function demoLatency(): Promise<void> {
+function demoLatency(): number {
   const ms =
     DEMO_LATENCY_MS.min +
-    Math.random() * (DEMO_LATENCY_MS.max - DEMO_LATENCY_MS.min);
-  return delay(ms);
+    Math.floor(Math.random() * (DEMO_LATENCY_MS.max - DEMO_LATENCY_MS.min));
+  return ms;
 }
 
 function matchesCardLeak(text: string): boolean {
@@ -22,56 +22,91 @@ function matchesSsnLeak(text: string): boolean {
   return /\bssn\b|social security|078-05-1120|\d{3}-\d{2}-\d{4}/i.test(text);
 }
 
-function matchesCostLoop(text: string): boolean {
-  return /loop|50000\s*tokens|ignore all|keep calling the api/i.test(text);
+function matchesRunawayCosts(text: string): boolean {
+  return /loop|50000\s*tokens|ignore all|keep calling the api|runaway/i.test(text);
 }
 
 function matchesOffPolicy(text: string): boolean {
-  return /illegal drugs|synthesiz|off-policy|ignore.{0,20}rules|harmful/i.test(text);
+  return /illegal drugs|synthesiz|step-by-step guide for making/i.test(text);
 }
 
-/** Simulated governance outcomes for Go Live previews without live API keys. */
-export async function runDemoChat(request: ChatRunRequest): Promise<GovernanceOutcome> {
-  await demoLatency();
+function matchesFrance(text: string): boolean {
+  return /capital of france|paris/i.test(text);
+}
+
+function matchesGreeting(text: string): boolean {
+  return /^(hi|hello|hey)\b/i.test(text.trim());
+}
+
+/** Simulated end-to-end turns for Go Live previews without live API keys. */
+export async function runDemoChat(request: ChatRunRequest): Promise<ChatTurnResult> {
+  const latencyMs = demoLatency();
+  await delay(latencyMs);
   const text = request.question;
 
   if (matchesCardLeak(text)) {
     return {
+      latencyMs,
       status: "blocked",
-      headline: "Payment data detected. The AI never saw your message.",
-      detail: "",
+      summary: "Payment data detected. The AI never saw your message.",
       caught: "VISA-like pattern",
+      aiResponse: null,
     };
   }
 
   if (matchesSsnLeak(text)) {
     return {
+      latencyMs,
       status: "blocked",
-      headline: "Identity data detected. The AI never saw your message.",
-      detail: "",
+      summary: "Identity data detected. The AI never saw your message.",
       caught: "SSN pattern",
+      aiResponse: null,
     };
   }
 
-  if (matchesCostLoop(text)) {
+  if (matchesRunawayCosts(text)) {
     return {
+      latencyMs,
       status: "budget_capped",
-      detail:
+      summary:
         "Session budget reached. Quantlix stopped the request before additional model cost accrued.",
+      aiResponse: null,
     };
   }
 
   if (matchesOffPolicy(text)) {
     return {
+      latencyMs,
       status: "flagged",
-      text: "I cannot provide instructions for illegal or harmful activity.",
-      note: "Quantlix flagged this prompt before a full model response was returned.",
+      summary: "Sensitive topic detected. Logged for review.",
+      aiResponse:
+        "I cannot provide instructions for illegal or harmful activity. I can help with product support or policy questions instead.",
+    };
+  }
+
+  if (matchesFrance(text)) {
+    return {
+      latencyMs,
+      status: "allowed",
+      summary: "Message passed policy checks and reached the model.",
+      aiResponse: "The capital of France is Paris.",
+    };
+  }
+
+  if (matchesGreeting(text)) {
+    return {
+      latencyMs,
+      status: "allowed",
+      summary: "Message passed policy checks and reached the model.",
+      aiResponse: "Hello! How can I help you today?",
     };
   }
 
   return {
+    latencyMs,
     status: "allowed",
-    text:
-      "Quantlix governs prompts and responses on the way to your model. In production this answer comes from your deployment contract — scope, PII, jailbreak, and budget policies all run on the /run path.",
+    summary: "Message passed policy checks and reached the model.",
+    aiResponse:
+      "Quantlix governs prompts and responses on the way to your model. In production this answer comes from your deployment — scope, PII, jailbreak, and budget policies all run on the /run path.",
   };
 }

@@ -24,7 +24,17 @@ export { DEMO_PROMPTS } from "./lib/demoPrompts";
 export type { DemoPrompt } from "./lib/demoPrompts";
 
 export type { GovernanceOutcome, GovernanceStatus } from "./lib/governanceOutcome";
-export { statusLabel } from "./lib/governanceOutcome";
+
+export type { ChatTurnResult } from "./lib/chatTurnResult";
+export {
+  toChatTurnResult,
+  statusLabel,
+  statusIcon,
+  blockedAiPlaceholder,
+} from "./lib/chatTurnResult";
+
+export { ChatExchange } from "./components/ChatExchange";
+export { WelcomeMessage } from "./components/WelcomeMessage";
 
 export { runProtectedChat } from "./lib/quantlixRun";
 export type { ChatRunRequest } from "./lib/quantlixRun";

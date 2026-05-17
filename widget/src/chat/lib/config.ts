@@ -18,6 +18,8 @@ export type ProtectedChatConfig = {
   showBranding: boolean;
   /** Simulated governance when true (preview / missing credentials). */
   demo: boolean;
+  /** Opening assistant message shown before the first user turn. */
+  welcomeMessage: string;
   mountSelector?: string;
 };
 
@@ -74,6 +76,9 @@ function readScriptConfig(): Partial<ProtectedChatConfig> {
   if (script.dataset.greeting) {
     config.greeting = script.dataset.greeting;
   }
+  if (script.dataset.welcomeMessage) {
+    config.welcomeMessage = script.dataset.welcomeMessage;
+  }
   if (script.dataset.theme === "light" || script.dataset.theme === "dark") {
     config.theme = script.dataset.theme;
   }
@@ -126,6 +131,7 @@ export function resolveProtectedChatConfig(): ProtectedChatConfig {
     proxyUrl: scriptConfig.proxyUrl ?? windowConfig.proxyUrl,
     title: scriptConfig.title ?? windowConfig.title,
     greeting: scriptConfig.greeting ?? windowConfig.greeting,
+    welcomeMessage: scriptConfig.welcomeMessage ?? windowConfig.welcomeMessage,
     theme: scriptConfig.theme ?? windowConfig.theme,
     position: scriptConfig.position ?? windowConfig.position,
     mode: scriptConfig.mode ?? windowConfig.mode ?? defaultMode,

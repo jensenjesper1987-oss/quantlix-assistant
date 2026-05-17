@@ -99,7 +99,8 @@
 .ql-chat-shell--inline .ql-chat-panel {
   width: 100%;
   max-width: none;
-  max-height: min(520px, 70vh);
+  min-height: min(440px, 70vh);
+  max-height: min(560px, 75vh);
 }
 
 .ql-chat-header {
@@ -158,18 +159,6 @@
   border: 1px solid rgba(61, 217, 140, 0.28);
 }
 
-.ql-chat-demo-badge {
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  padding: 3px 8px;
-  border-radius: 999px;
-  background: rgba(255, 193, 94, 0.14);
-  color: #ffc15e;
-  border: 1px solid rgba(255, 193, 94, 0.35);
-}
-
 .ql-chat-subtitle {
   margin: 4px 0 0;
   font-size: 12px;
@@ -189,9 +178,9 @@
 
 .ql-chat-body {
   flex: 1;
-  min-height: 220px;
+  min-height: 0;
   overflow-y: auto;
-  padding: 14px;
+  padding: 12px 14px;
   background: rgba(5, 10, 18, 0.35);
 }
 
@@ -199,17 +188,171 @@
   background: rgba(244, 247, 252, 0.8);
 }
 
-.ql-chat-empty-text {
-  margin: 0;
-  font-size: 13px;
-  line-height: 1.55;
-  color: var(--ql-text-muted);
-}
-
 .ql-chat-messages {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
+  min-height: 100%;
+}
+
+.ql-chat-welcome {
+  margin-bottom: 4px;
+}
+
+.ql-chat-ai--welcome .ql-chat-ai-text {
+  color: var(--ql-text);
+}
+
+.ql-chat-exchange {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ql-chat-exchange-reply {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Quantlix decision — prominent */
+.ql-chat-decision {
+  padding: 12px 14px;
+  border-radius: var(--ql-radius-md);
+  border: 1px solid var(--ql-border);
+}
+
+.ql-chat-decision--allowed {
+  border-color: rgba(61, 217, 140, 0.4);
+  background: rgba(61, 217, 140, 0.1);
+}
+
+.ql-chat-decision--blocked {
+  border-color: rgba(255, 107, 122, 0.4);
+  background: rgba(255, 107, 122, 0.12);
+}
+
+.ql-chat-decision--budget_capped {
+  border-color: rgba(255, 193, 94, 0.4);
+  background: rgba(255, 193, 94, 0.1);
+}
+
+.ql-chat-decision--flagged {
+  border-color: rgba(255, 193, 94, 0.35);
+  background: rgba(255, 193, 94, 0.08);
+}
+
+.ql-chat-decision-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.ql-chat-decision-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.ql-chat-decision-status {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.ql-chat-decision--allowed .ql-chat-decision-status {
+  color: var(--ql-success);
+}
+
+.ql-chat-decision--blocked .ql-chat-decision-status {
+  color: var(--ql-danger);
+}
+
+.ql-chat-decision--budget_capped .ql-chat-decision-status {
+  color: #ffc15e;
+}
+
+.ql-chat-decision--flagged .ql-chat-decision-status {
+  color: #ffc15e;
+}
+
+.ql-chat-decision-latency {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ql-text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.ql-chat-decision-summary {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--ql-text);
+}
+
+.ql-chat-decision-detail,
+.ql-chat-decision-caught {
+  margin: 4px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--ql-text-muted);
+}
+
+/* AI row — supporting, neutral */
+.ql-chat-ai {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: var(--ql-radius-md);
+  border: 1px solid var(--ql-border);
+  background: rgba(10, 20, 36, 0.6);
+}
+
+.ql-chat-shell--theme-light .ql-chat-ai {
+  background: rgba(238, 243, 251, 0.9);
+}
+
+.ql-chat-ai--stopped {
+  opacity: 0.85;
+}
+
+.ql-chat-ai-label {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ql-text-dim);
+  line-height: 1.4;
+}
+
+.ql-chat-ai-text {
+  margin: 0;
+  flex: 1;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ql-text-muted);
+}
+
+.ql-chat-ai--stopped .ql-chat-ai-text {
+  font-style: italic;
+  color: var(--ql-text-dim);
+}
+
+.ql-chat-ai-flag {
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 600;
+  color: #ffc15e;
+  align-self: center;
 }
 
 .ql-chat-user-row {
@@ -228,7 +371,13 @@
 }
 
 .ql-chat-user-icon {
+  display: inline-block;
   margin-right: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ql-cyan);
 }
 
 .ql-gov-reply {
@@ -354,22 +503,25 @@
 }
 
 .ql-chat-footer {
-  padding: 10px 12px 12px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 12px 10px;
   border-top: 1px solid var(--ql-border);
   background: var(--ql-surface-1);
 }
 
 .ql-chat-demo {
-  margin-bottom: 10px;
+  margin: 0;
 }
 
 .ql-chat-demo-label {
-  margin: 0 0 8px;
-  font-size: 11px;
+  margin: 0 0 6px;
+  font-size: 12px;
   font-weight: 600;
-  color: var(--ql-text-dim);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  color: var(--ql-text-muted);
+  letter-spacing: 0.01em;
 }
 
 .ql-chat-demo-chips {
@@ -379,19 +531,39 @@
 }
 
 .ql-chat-demo-chip {
-  padding: 6px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 11px;
   border-radius: 999px;
   border: 1px solid var(--ql-border);
   background: var(--ql-surface-2);
   color: var(--ql-text);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   font-family: inherit;
   cursor: pointer;
+  transition:
+    transform 0.12s ease,
+    border-color 0.12s ease,
+    box-shadow 0.12s ease,
+    background 0.12s ease;
 }
 
 .ql-chat-demo-chip:hover:not(:disabled) {
+  transform: translateY(-1px);
   border-color: var(--ql-border-strong);
+  background: var(--ql-surface-3);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+.ql-chat-demo-chip:hover:not(:disabled) .ql-chip-arrow {
+  opacity: 1;
+  transform: translateX(2px);
+}
+
+.ql-chat-demo-chip:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 .ql-chat-demo-chip:disabled {
@@ -399,16 +571,63 @@
   cursor: not-allowed;
 }
 
+.ql-chip-icon {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.ql-chip-icon--pii-card {
+  background: #ff6b7a;
+  box-shadow: 0 0 0 2px rgba(255, 107, 122, 0.25);
+}
+
+.ql-chip-icon--pii-ssn {
+  background: #a78bfa;
+  box-shadow: 0 0 0 2px rgba(167, 139, 250, 0.25);
+}
+
+.ql-chip-icon--runaway-costs {
+  background: #ffc15e;
+  box-shadow: 0 0 0 2px rgba(255, 193, 94, 0.25);
+}
+
+.ql-chip-icon--off-policy {
+  background: #6b8cff;
+  box-shadow: 0 0 0 2px rgba(107, 140, 255, 0.25);
+}
+
+.ql-chip-icon--safe {
+  background: var(--ql-success);
+  box-shadow: 0 0 0 2px rgba(61, 217, 140, 0.25);
+}
+
+.ql-chip-label {
+  line-height: 1.2;
+}
+
+.ql-chip-arrow {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ql-cyan);
+  opacity: 0.65;
+  transition:
+    opacity 0.12s ease,
+    transform 0.12s ease;
+}
+
 .ql-chat-composer {
   display: flex;
   gap: 8px;
-  align-items: flex-end;
+  align-items: stretch;
 }
 
 .ql-chat-composer-input {
   flex: 1;
   resize: none;
-  min-height: 44px;
+  min-height: 40px;
+  max-height: 88px;
   padding: 10px 12px;
   border-radius: var(--ql-radius-md);
   border: 1px solid var(--ql-border);
@@ -419,7 +638,9 @@
 }
 
 .ql-chat-composer-send {
-  padding: 10px 14px;
+  align-self: stretch;
+  min-width: 64px;
+  padding: 0 14px;
   border-radius: var(--ql-radius-md);
   border: 1px solid rgba(95, 214, 255, 0.35);
   background: linear-gradient(135deg, rgba(95, 214, 255, 0.2), rgba(77, 163, 255, 0.15));
@@ -436,7 +657,7 @@
 }
 
 .ql-chat-branding {
-  margin: 8px 0 0;
+  margin: 2px 0 0;
   text-align: center;
   font-size: 11px;
   color: var(--ql-text-dim);

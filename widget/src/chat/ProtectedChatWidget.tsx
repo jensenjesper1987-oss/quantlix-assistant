@@ -1,19 +1,34 @@
-import React, { useLayoutEffect, useMemo, useRef, useState } from "react";
+import React, { useLayoutEffect, useRef, useState } from "react";
 import type { ProtectedChatConfig } from "./lib/config";
 import { DemoPromptChips } from "./components/DemoPromptChips";
 import { ChatReplyLoader } from "./components/ChatReplyLoader";
-import { GovernanceReply } from "./components/GovernanceReply";
-import type { GovernanceOutcome } from "./lib/governanceOutcome";
+import { ChatExchange } from "./components/ChatExchange";
+import { WelcomeMessage } from "./components/WelcomeMessage";
+import type { ChatTurnResult } from "./lib/chatTurnResult";
 import { runProtectedChat } from "./lib/quantlixRun";
+import type { HistoryTurn } from "./lib/governanceOutcome";
 
-type ChatTurn =
-  | { role: "user"; content: string }
-  | { role: "governance"; outcome: GovernanceOutcome };
+type MessageGroup = {
+  id: string;
+  user: string;
+  loading?: boolean;
+  result?: ChatTurnResult;
+};
 
 type ProtectedChatWidgetProps = {
   config: ProtectedChatConfig;
   onClose?: () => void;
 };
+
+function groupsToHistory(groups: MessageGroup[]): HistoryTurn[] {
+  return groups.flatMap((group) => {
+    const rows: HistoryTurn[] = [{ role: "user", content: group.user }];
+    if (group.result?.aiResponse) {
+      rows.push({ role: "assistant", content: group.result.aiResponse });
+    }
+    return rows;
+  });
+}
 
 function QuantlixGlyph(): React.ReactElement {
   return (
@@ -48,7 +63,7 @@ export function ProtectedChatWidget(props: ProtectedChatWidgetProps): React.Reac
   const { config, onClose } = props;
   const [question, setQuestion] = useState("");
   const [sessionId] = useState(() => crypto.randomUUID());
-  const [turns, setTurns] = useState<ChatTurn[]>([]);
+  const [groups, setGroups] = useState<MessageGroup[]>([]);
   const [awaitingReply, setAwaitingReply] = useState(false);
   const scrollAnchorRef = useRef<HTMLDivElement | null>(null);
 
@@ -60,23 +75,9 @@ export function ProtectedChatWidget(props: ProtectedChatWidgetProps): React.Reac
     `ql-chat-shell--theme-${config.theme}`,
   ].join(" ");
 
-  const history = useMemo(
-    () =>
-      turns.flatMap((turn) => {
-        if (turn.role === "user") {
-          return [{ role: "user" as const, content: turn.content }];
-        }
-        if (turn.outcome.status === "allowed") {
-          return [{ role: "assistant" as const, content: turn.outcome.text }];
-        }
-        return [];
-      }),
-    [turns],
-  );
-
   useLayoutEffect(() => {
     scrollAnchorRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  }, [turns, awaitingReply]);
+  }, [groups, awaitingReply]);
 
   const send = async (text?: string): Promise<void> => {
     if (awaitingReply) {
@@ -87,28 +88,42 @@ export function ProtectedChatWidget(props: ProtectedChatWidgetProps): React.Reac
       return;
     }
     setQuestion("");
-    setTurns((prev) => [...prev, { role: "user", content: trimmed }]);
+
+    const historyBefore = groupsToHistory(groups);
+    const groupId = crypto.randomUUID();
+    setGroups((prev) => [...prev, { id: groupId, user: trimmed, loading: true }]);
     setAwaitingReply(true);
 
     try {
-      const outcome = await runProtectedChat(config, {
+      const result = await runProtectedChat(config, {
         question: trimmed,
         sessionId,
-        history,
+        history: historyBefore,
       });
-      setTurns((prev) => [...prev, { role: "governance", outcome }]);
+      setGroups((prev) =>
+        prev.map((group) =>
+          group.id === groupId ? { ...group, loading: false, result } : group,
+        ),
+      );
     } catch {
-      setTurns((prev) => [
-        ...prev,
-        {
-          role: "governance",
-          outcome: {
-            status: "blocked",
-            headline: "Network error",
-            detail: "Could not reach Quantlix. Check deployment, API key, and CORS settings.",
-          },
-        },
-      ]);
+      setGroups((prev) =>
+        prev.map((group) =>
+          group.id === groupId
+            ? {
+                ...group,
+                loading: false,
+                result: {
+                  latencyMs: 0,
+                  status: "blocked",
+                  summary: "Network error",
+                  detail:
+                    "Could not reach Quantlix. Check deployment, API key, and CORS settings.",
+                  aiResponse: null,
+                },
+              }
+            : group,
+        ),
+      );
     } finally {
       setAwaitingReply(false);
     }
@@ -126,11 +141,6 @@ export function ProtectedChatWidget(props: ProtectedChatWidgetProps): React.Reac
               <div className="ql-chat-title-row">
                 <h2 className="ql-chat-title">{config.title}</h2>
                 <span className="ql-chat-protected-badge">🛡️ Protected</span>
-                {config.demo ? (
-                  <span className="ql-chat-demo-badge" title="Simulated responses for preview">
-                    Demo
-                  </span>
-                ) : null}
               </div>
               {!isInline ? (
                 <p className="ql-chat-subtitle">Governed before the model sees your message</p>
@@ -145,34 +155,25 @@ export function ProtectedChatWidget(props: ProtectedChatWidgetProps): React.Reac
         </header>
 
         <div className="ql-chat-body">
-          {turns.length === 0 ? (
-            <div className="ql-chat-empty">
-              <p className="ql-chat-empty-text">{config.greeting}</p>
-            </div>
-          ) : null}
-
           <div className="ql-chat-messages">
-            {turns.map((turn, index) =>
-              turn.role === "user" ? (
-                <div key={`user-${index}`} className="ql-chat-user-row">
+            <WelcomeMessage text={config.welcomeMessage} />
+            {groups.map((group) => (
+              <div key={group.id} className="ql-chat-exchange">
+                <div className="ql-chat-user-row">
                   <div className="ql-chat-user-bubble">
                     <span className="ql-chat-user-icon" aria-hidden>
-                      👤
+                      You
                     </span>
-                    {turn.content}
+                    {group.user}
                   </div>
                 </div>
-              ) : (
-                <div key={`gov-${index}`} className="ql-chat-gov-row">
-                  <GovernanceReply outcome={turn.outcome} />
-                </div>
-              ),
-            )}
-            {awaitingReply ? (
-              <div className="ql-chat-gov-row">
-                <ChatReplyLoader />
+                {group.loading ? (
+                  <ChatReplyLoader />
+                ) : group.result ? (
+                  <ChatExchange result={group.result} />
+                ) : null}
               </div>
-            ) : null}
+            ))}
             <div ref={scrollAnchorRef} />
           </div>
         </div>
@@ -182,7 +183,7 @@ export function ProtectedChatWidget(props: ProtectedChatWidgetProps): React.Reac
           <div className="ql-chat-composer">
             <textarea
               className="ql-chat-composer-input"
-              rows={2}
+              rows={1}
               value={question}
               disabled={awaitingReply}
               onChange={(event) => setQuestion(event.target.value)}

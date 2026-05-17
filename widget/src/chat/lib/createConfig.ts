@@ -19,7 +19,14 @@ export type ProtectedChatPropsInput = {
   showBranding?: boolean;
   /** Force simulated responses (Go Live preview without keys). */
   demo?: boolean;
+  welcomeMessage?: string;
 };
+
+const DEFAULT_WELCOME_LIVE =
+  "Hi! I'm connected through your Quantlix deployment. Ask anything — or click a prompt below to see governance in action.";
+
+const DEFAULT_WELCOME_DEMO =
+  "Hi! I'm a real AI assistant connected through Quantlix. Try asking me anything — or click a prompt below to see how Quantlix handles risky prompts.";
 
 const DEFAULT_API_BASE = "https://api.quantlix.ai";
 
@@ -73,11 +80,9 @@ export function createProtectedChatConfig(
     apiBase: (input.apiBase ?? DEFAULT_API_BASE).replace(/\/$/, ""),
     proxyUrl: input.proxyUrl?.trim() || undefined,
     title: input.title?.trim() || "Quantlix Chat",
-    greeting:
-      input.greeting?.trim() ||
-      (demo
-        ? "Demo mode — try the chips below to preview how Quantlix governs risky prompts."
-        : "Try a message — risky prompts are governed before they reach the model."),
+    greeting: input.greeting?.trim() || "",
+    welcomeMessage:
+      input.welcomeMessage?.trim() || (demo ? DEFAULT_WELCOME_DEMO : DEFAULT_WELCOME_LIVE),
     theme: input.theme ?? "dark",
     position: input.position ?? "bottom-right",
     mode,

@@ -12,17 +12,21 @@ export function DemoPromptChips(props: DemoPromptChipsProps): React.ReactElement
 
   return (
     <div className="ql-chat-demo" aria-label="Try these prompts">
-      <p className="ql-chat-demo-label">Try these:</p>
+      <p className="ql-chat-demo-label">Try these prompts ↓</p>
       <div className="ql-chat-demo-chips">
         {prompts.map((prompt) => (
           <button
             key={prompt.id}
             type="button"
-            className="ql-chat-demo-chip"
+            className={`ql-chat-demo-chip ql-chat-demo-chip--${prompt.id}`}
             disabled={disabled}
             onClick={() => onSelect(prompt.text)}
           >
-            {prompt.label}
+            <span className={`ql-chip-icon ql-chip-icon--${prompt.id}`} aria-hidden />
+            <span className="ql-chip-label">{prompt.label}</span>
+            <span className="ql-chip-arrow" aria-hidden>
+              →
+            </span>
           </button>
         ))}
       </div>
